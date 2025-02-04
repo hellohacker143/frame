@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Search</title>
+    <style>
+        :root {
+            --background-color: #121212;
+            --text-color: #fff;
+            --container-bg-color: #1e1e1e;
+            --button-bg-color: #007bff;
+            --button-hover-color: #0056b3;
+        }
+
+        [data-theme="light"] {
+            --background-color: #f4f4f4;
+            --text-color: #000;
+            --container-bg-color: #fff;
+            --button-bg-color: #007bff;
+            --button-hover-color: #0056b3;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+            width: 90%;
+            max-width: 800px;
+            background-color: var(--container-bg-color);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: var(--button-bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--button-hover-color);
+        }
+
+        .container h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .input-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .input-box select, .input-box input {
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: var(--container-bg-color);
+            color: var(--text-color);
+            outline: none;
+        }
+
+        .input-box button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: var(--button-bg-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .input-box button:hover {
+            background-color: var(--button-hover-color);
+        }
+
+        .video-results {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .video-card {
+            background-color: var(--container-bg-color);
+            border-radius: 10px;
+            overflow: hidden;
+            text-align: justify;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            width: 200px;
+            height: auto;
+            padding: 10px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .video-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        .video-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        .video-card h3 {
+            font-size: 1em;
+            margin: 10px 0;
+            color: var(--text-color);
+            text-align: justify;
+        }
+
+        iframe {
+            width: 100%;
+            height: 300px;
+            margin-top: 20px;
+            border: none;
+        }
+
+        .filter-buttons {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .filter-buttons button {
+            padding: 10px 15px;
+            font-size: 1em;
+            background-color: var(--button-bg-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .filter-buttons button:hover {
+            background-color: var(--button-hover-color);
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+    <div class="container">
+        <h1>Search YouTube Videos</h1>
+        <div class="input-box">
+            <select id="language-select">
+                <option value="">All Languages</option>
+                <option value="Telugu">Telugu</option>
+                <option value="Hindi">Hindi</option>
+                <option value="English">English</option>
+            </select>
+            <input id="search-query" type="text" placeholder="Enter a search term">
+            <input id="max-results" type="number" min="1" max="50" placeholder="Number of videos">
+            <button onclick="searchVideos()">Search</button>
+        </div>
+        <div class="filter-buttons">
+            <button onclick="filterVideosByKeyword('CSS', 3)">CSS </button>
+            <button onclick="filterVideosByKeyword('HTML', 4)">HTML</button>
+            <button onclick="filterVideosByKeyword('Python', 5)">Python </button>
+            <button onclick="filterVideosByKeyword('Java', 2)">Java </button>
+        </div>
+        <iframe id="video-player" src="" style="display: none;"></iframe>
+        <div class="video-results" id="video-results"></div>
+    </div>
+
+    <script>
+        const body = document.body;
+
+        function toggleTheme() {
+            const currentTheme = body.getAttribute('data-theme');
+            if (currentTheme === 'light') {
+                body.removeAttribute('data-theme');
+            } else {
+                body.setAttribute('data-theme', 'light');
+            }
+        }
+ const apiKey = 'AIzaSyAIRDqQDxhZpUBABtuIkWEGSl5ZEpfEIIo'; // Your API Key
+        let bookmarks = JSON.parse(localStorage.getItem('bookmarks')) || [];
+
+
+        function searchVideos() {
+            const query = document.getElementById('search-query').value;
+            const maxResults = parseInt(document.getElementById('max-results').value, 10) || 5;
+            const language = document.getElementById('language-select').value;
+
+            let searchQuery = query;
+            if (language) {
+                searchQuery = `${query} ${language}`;
+            }
+
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${searchQuery}&maxResults=${maxResults}&key=${apiKey}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    allVideos = data.items;
+                    displayVideos(allVideos);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function filterVideosByKeyword(keyword, count) {
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${keyword}&maxResults=${count}&key=${apiKey}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    displayVideos(data.items);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function displayVideos(videos) {
+            const resultsContainer = document.getElementById('video-results');
+            resultsContainer.innerHTML = '';
+
+            videos.forEach(video => {
+                if (video.id.videoId) {
+                    const videoCard = document.createElement('div');
+                    videoCard.classList.add('video-card');
+                    videoCard.innerHTML = `
+                        <img src="${video.snippet.thumbnails.high.url}" alt="${video.snippet.title}">
+                        <h3>${video.snippet.title}</h3>
+                    `;
+                    videoCard.onclick = () => playVideo(video.id.videoId);
+                    resultsContainer.appendChild(videoCard);
+                }
+            });
+        }
+
+        function playVideo(videoId) {
+            const player = document.getElementById('video-player');
+            player.src = `https://www.youtube.com/embed/${videoId}`;
+            player.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
